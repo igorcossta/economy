@@ -1,0 +1,12 @@
+name: Economy
+version: '0.0.0'
+main: com.github.igorcossta.Economy
+api-version: '1.21'
+authors: [ igorcossta ]
+description: Economy system
+website: https://github.com/igorcossta
+commands:
+  money:
+  withdraw:
+  deposit:
+  addacc:
