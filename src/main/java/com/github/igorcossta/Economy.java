@@ -1,6 +1,7 @@
 package com.github.igorcossta;
 
 import com.github.igorcossta.application.EconomyService;
+import com.github.igorcossta.infra.repository.AccountRepositoryInMemory;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -11,7 +12,7 @@ public final class Economy extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        economyService = new EconomyService();
+        economyService = new EconomyService(new AccountRepositoryInMemory());
 
         this.getCommand("addacc").setExecutor((sender, command, label, args) -> {
             if (sender instanceof Player player) {
