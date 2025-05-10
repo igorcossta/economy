@@ -6,7 +6,4 @@ authors: [ igorcossta ]
 description: Economy system
 website: https://github.com/igorcossta
 commands:
-  money:
-  withdraw:
-  deposit:
   addacc:
