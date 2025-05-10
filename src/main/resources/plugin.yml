@@ -5,5 +5,3 @@ api-version: '1.21'
 authors: [ igorcossta ]
 description: Economy system
 website: https://github.com/igorcossta
-commands:
-  addacc:
