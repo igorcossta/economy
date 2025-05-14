@@ -5,12 +5,25 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Account {
+    private AccountId accountId;
     private final Identifier identifier;
     private Amount amount;
+    private Username username;
+    private AccountSettings accountSettings;
 
-    public Account(Identifier identifier, Amount amount) {
+    public Account(Identifier identifier, Amount amount, Username username) {
         this.identifier = Objects.requireNonNull(identifier);
         this.amount = Objects.requireNonNull(amount);
+        this.username = Objects.requireNonNull(username);
+        this.accountSettings = new AccountSettings();
+    }
+
+    public Account(AccountId accountId, Identifier identifier, Amount amount, Username username) {
+        this.accountId = Objects.requireNonNull(accountId);
+        this.identifier = Objects.requireNonNull(identifier);
+        this.amount = Objects.requireNonNull(amount);
+        this.username = Objects.requireNonNull(username);
+        this.accountSettings = new AccountSettings();
     }
 
     public void deposit(Amount depositAmount) {
@@ -25,6 +38,26 @@ public class Account {
             throw new IllegalArgumentException("Withdrawal amount cannot be null");
         }
         this.amount = this.amount.subtract(withdrawAmount);
+    }
+
+    public String getOwnerUsername() {
+        return this.username.value();
+    }
+
+    public boolean receivesTransactions() {
+        return this.accountSettings.isReceiveTransactions();
+    }
+
+    public boolean receivesNotifications() {
+        return this.accountSettings.isReceiveNotifications();
+    }
+
+    public boolean showsBalanceOnJoin() {
+        return this.accountSettings.isShowBalanceOnJoin();
+    }
+
+    public UUID getAccountId() {
+        return this.accountId.value();
     }
 
     public UUID getIdentifier() {

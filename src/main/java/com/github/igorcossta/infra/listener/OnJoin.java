@@ -3,6 +3,7 @@ package com.github.igorcossta.infra.listener;
 import com.github.igorcossta.domain.Account;
 import com.github.igorcossta.domain.Amount;
 import com.github.igorcossta.domain.Identifier;
+import com.github.igorcossta.domain.Username;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,7 +25,10 @@ public class OnJoin implements Listener {
         UUID uuid = event.getPlayer().getUniqueId();
         Optional<Account> account = accountRepository.findByUUID(uuid);
         if (account.isEmpty()) {
-            accountRepository.save(new Account(new Identifier(uuid), new Amount(new BigDecimal(1))));
+            Identifier identifier = new Identifier(uuid);
+            Amount amount = new Amount(new BigDecimal(1));
+            Username username = new Username(event.getPlayer().getName());
+            accountRepository.save(new Account(identifier, amount, username));
             event.getPlayer().sendMessage("Welcome! We are creating a new bank account.");
         }
     }
