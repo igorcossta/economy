@@ -1,8 +1,7 @@
 package com.github.igorcossta.infra.database;
 
-import com.github.igorcossta.domain.*;
-
 import java.io.File;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -10,7 +9,6 @@ import java.sql.Statement;
 import java.util.Optional;
 import java.util.UUID;
 
-// TODO: create repository entity instead of using domain entity
 public class Sqlite {
     private final Connection connection;
 
@@ -53,7 +51,10 @@ public class Sqlite {
                      account_id CHAR(36) PRIMARY KEY,
                      player_uuid CHAR(36) NOT NULL UNIQUE,
                      amount DECIMAL(19, 4) NOT NULL,
-                     username CHAR(255) NOT NULL
+                     username CHAR(255) NOT NULL,
+                     receive_transactions BOOLEAN NOT NULL DEFAULT 1,
+                     receive_notifications BOOLEAN NOT NULL DEFAULT 1,
+                     show_balance_on_join BOOLEAN NOT NULL DEFAULT 1
                  );
                 """;
         try (Statement stmt = getConnection().createStatement()) {
@@ -63,40 +64,79 @@ public class Sqlite {
         }
     }
 
-    public void save(Account account) {
+    public void save(AccountEntity account) {
         String insertAccount = """
-                INSERT INTO Account (account_id, player_uuid, amount, username)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO Account (
+                    account_id,
+                    player_uuid,
+                    amount,
+                    username,
+                    receive_transactions,
+                    receive_notifications,
+                    show_balance_on_join
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(player_uuid)
-                DO UPDATE SET amount = excluded.amount;
+                DO UPDATE SET
+                    amount = excluded.amount,
+                    username = excluded.username,
+                    receive_transactions = excluded.receive_transactions,
+                    receive_notifications = excluded.receive_notifications,
+                    show_balance_on_join = excluded.show_balance_on_join;
                 """;
+
         try (var st = getConnection().prepareStatement(insertAccount)) {
-            st.setString(1, UUID.randomUUID().toString());
+            st.setString(1, account.getAccountId().toString());
             st.setString(2, account.getIdentifier().toString());
-            st.setBigDecimal(3, account.balance());
-            st.setString(4, account.getOwnerUsername());
+            st.setBigDecimal(3, account.getAmount());
+            st.setString(4, account.getUsername());
+            st.setBoolean(5, account.isReceiveTransactions());
+            st.setBoolean(6, account.isReceiveNotifications());
+            st.setBoolean(7, account.isShowBalanceOnJoin());
             st.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Optional<Account> findByUUID(UUID uuid) {
-        final String findUUID = """
-                    SELECT account_id, player_uuid, amount, username FROM Account WHERE player_uuid = ?
+    public Optional<AccountEntity> findByUUID(UUID uuid) {
+        final String query = """
+                SELECT
+                    account_id,
+                    player_uuid,
+                    amount,
+                    username,
+                    receive_transactions,
+                    receive_notifications,
+                    show_balance_on_join
+                FROM Account
+                WHERE player_uuid = ?
                 """;
-        try (var st = getConnection().prepareStatement(findUUID)) {
+        try (var st = getConnection().prepareStatement(query)) {
             st.setString(1, uuid.toString());
 
             try (var rs = st.executeQuery()) {
                 if (rs.next()) {
-                    AccountId accountId = new AccountId(UUID.fromString(rs.getString("account_id")));
-                    Identifier id = new Identifier(UUID.fromString(rs.getString("player_uuid")));
-                    Amount amount = new Amount(rs.getBigDecimal("amount"));
-                    Username username = new Username(rs.getString("username"));
-                    // todo: load settings
-                    Account account = new Account(accountId, id, amount, username);
-                    return Optional.of(account);
+                    UUID accountId = UUID.fromString(rs.getString("account_id"));
+                    UUID identifier = UUID.fromString(rs.getString("player_uuid"));
+                    BigDecimal amount = rs.getBigDecimal("amount");
+                    String username = rs.getString("username");
+
+                    boolean receiveTransactions = rs.getBoolean("receive_transactions");
+                    boolean receiveNotifications = rs.getBoolean("receive_notifications");
+                    boolean showBalanceOnJoin = rs.getBoolean("show_balance_on_join");
+
+                    AccountEntity entity = new AccountEntity(
+                            accountId,
+                            identifier,
+                            amount,
+                            username,
+                            receiveTransactions,
+                            receiveNotifications,
+                            showBalanceOnJoin
+                    );
+
+                    return Optional.of(entity);
                 }
             }
         } catch (SQLException e) {
@@ -105,5 +145,4 @@ public class Sqlite {
 
         return Optional.empty();
     }
-
 }

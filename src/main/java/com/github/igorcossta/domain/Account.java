@@ -12,6 +12,7 @@ public class Account {
     private AccountSettings accountSettings;
 
     public Account(Identifier identifier, Amount amount, Username username) {
+        this.accountId = new AccountId(UUID.randomUUID());
         this.identifier = Objects.requireNonNull(identifier);
         this.amount = Objects.requireNonNull(amount);
         this.username = Objects.requireNonNull(username);
@@ -24,6 +25,23 @@ public class Account {
         this.amount = Objects.requireNonNull(amount);
         this.username = Objects.requireNonNull(username);
         this.accountSettings = new AccountSettings();
+    }
+
+    // used by mapper
+    public Account(AccountId accountId,
+                   Identifier identifier,
+                   Amount amount,
+                   Username username,
+                   Boolean receiveTransactions,
+                   Boolean receiveNotifications,
+                   Boolean showBalanceOnJoin) {
+        this.accountId = Objects.requireNonNull(accountId);
+        this.identifier = Objects.requireNonNull(identifier);
+        this.amount = Objects.requireNonNull(amount);
+        this.username = Objects.requireNonNull(username);
+        this.accountSettings = new AccountSettings(receiveTransactions,
+                receiveNotifications,
+                showBalanceOnJoin);
     }
 
     public void deposit(Amount depositAmount) {
