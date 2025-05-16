@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -76,6 +75,111 @@ class AccountTest {
             underTest.withdraw(withdraw);
 
             assertEquals(result.value(), underTest.balance());
+        }
+    }
+
+    @Nested
+    class AccountConstructorTest {
+        Identifier identifier = new Identifier(UUID.randomUUID());
+        Amount amount = new Amount(BigDecimal.TEN);
+        Username username = new Username("TestUser");
+        AccountId accountId = new AccountId(UUID.randomUUID());
+
+        @Nested
+        class ConstructorWithoutAccountId {
+            @Test
+            @DisplayName("Creates Account when all parameters are non-null")
+            void whenAllParamsAreNonNullThenAccountIsCreated() {
+                assertDoesNotThrow(() -> new Account(identifier, amount, username));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when identifier is null")
+            void whenIdentifierIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(null, amount, username));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when amount is null")
+            void whenAmountIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(identifier, null, username));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when username is null")
+            void whenUsernameIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(identifier, amount, null));
+            }
+        }
+
+        @Nested
+        class ConstructorWithAccountId {
+            @Test
+            @DisplayName("Creates Account when all parameters are non-null")
+            void whenAllParamsAreNonNullThenAccountIsCreated() {
+                assertDoesNotThrow(() -> new Account(accountId, identifier, amount, username));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when accountId is null")
+            void whenAccountIdIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(null, identifier, amount, username));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when identifier is null")
+            void whenIdentifierIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(accountId, null, amount, username));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when amount is null")
+            void whenAmountIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(accountId, identifier, null, username));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when username is null")
+            void whenUsernameIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(accountId, identifier, amount, null));
+            }
+        }
+
+        @Nested
+        class FullConstructor {
+            Boolean receiveTx = true;
+            Boolean receiveNotif = false;
+            Boolean showBalance = true;
+
+            @Test
+            @DisplayName("Creates Account when all parameters are non-null")
+            void whenAllParamsAreNonNullThenAccountIsCreated() {
+                assertDoesNotThrow(() -> new Account(accountId, identifier, amount, username, receiveTx, receiveNotif, showBalance));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when accountId is null")
+            void whenAccountIdIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(null, identifier, amount, username, receiveTx, receiveNotif, showBalance));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when identifier is null")
+            void whenIdentifierIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(accountId, null, amount, username, receiveTx, receiveNotif, showBalance));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when amount is null")
+            void whenAmountIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(accountId, identifier, null, username, receiveTx, receiveNotif, showBalance));
+            }
+
+            @Test
+            @DisplayName("Throws NPE when username is null")
+            void whenUsernameIsNullThenThrowNPE() {
+                assertThrows(NullPointerException.class, () -> new Account(accountId, identifier, amount, null, receiveTx, receiveNotif, showBalance));
+            }
         }
     }
 }
