@@ -15,10 +15,19 @@ public class DepositImpl implements Deposit {
         this.accountRepository = accountRepository;
     }
 
+    // todo: get offline player uuid instead and then make the check at service level
     @Override
     public void to(UUID uuid, BigDecimal value) {
         Account account = accountRepository.findByUUID(uuid)
                 .orElseThrow(() -> new RuntimeException("account %s not found".formatted(uuid)));
+
+        if (account.getIdentifier().equals(uuid)) {
+            throw new RuntimeException("You cannot send money to yourself");
+        }
+
+        if (!account.receivesTransactions()) {
+            throw new RuntimeException("Account %s can't receive transactions".formatted(uuid));
+        }
 
         account.deposit(new Amount(value));
         accountRepository.save(account);
