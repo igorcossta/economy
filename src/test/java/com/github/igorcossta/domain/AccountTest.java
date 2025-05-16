@@ -10,7 +10,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AccountTest {
     Account underTest;
@@ -51,5 +52,30 @@ class AccountTest {
             assertEquals(result.value(), underTest.balance());
         }
 
+    }
+
+    @Nested
+    class WithdrawBehavior {
+        @Test
+        @DisplayName("Throws IllegalArgumentException when withdraw amount is null")
+        void whenWithdrawAmountIsNullThenThrowIllegalArgumentException() {
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> underTest.withdraw(null));
+            assertEquals("Withdrawal amount cannot be null", exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("Subtract withdraw amount to current balance correctly")
+        void whenWithdrawAmountIsValidThenBalanceIsDecremented() {
+            Amount current = mock(Amount.class);
+            Amount withdraw = mock(Amount.class);
+            Amount result = new Amount(new BigDecimal(1));
+
+            when(current.subtract(withdraw)).thenReturn(result);
+
+            underTest = new Account(identifier, current, username);
+            underTest.withdraw(withdraw);
+
+            assertEquals(result.value(), underTest.balance());
+        }
     }
 }
