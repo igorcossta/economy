@@ -5,10 +5,13 @@ import com.github.igorcossta.domain.exception.InsufficientFundsException;
 import com.github.igorcossta.domain.exception.InvalidTransactionAmountException;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class Amount {
     private final BigDecimal amount;
     private final BigDecimal MAX_BALANCE = new BigDecimal(999_999_999);
+    private final int SCALE = 2;
+    private final RoundingMode ROUNDING = RoundingMode.HALF_UP;
 
     public Amount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
@@ -18,11 +21,12 @@ public class Amount {
     }
 
     public Amount add(Amount other) {
-        Amount result = new Amount(this.amount.add(other.amount));
-        if (result.amount.compareTo(MAX_BALANCE) > 0) {
+        BigDecimal addedValue = this.amount.add(other.amount);
+        BigDecimal scaledAmount = addedValue.setScale(SCALE, ROUNDING);
+        if (scaledAmount.compareTo(MAX_BALANCE) > 0) {
             throw new BalanceLimitExceedException(MAX_BALANCE);
         }
-        return result;
+        return new Amount(scaledAmount);
     }
 
     public Amount subtract(Amount other) {
