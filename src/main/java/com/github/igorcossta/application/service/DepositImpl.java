@@ -2,6 +2,9 @@ package com.github.igorcossta.application.service;
 
 import com.github.igorcossta.domain.Account;
 import com.github.igorcossta.domain.Amount;
+import com.github.igorcossta.domain.exception.AccountNotFoundException;
+import com.github.igorcossta.domain.exception.ReceivingTransactionsDisabledException;
+import com.github.igorcossta.domain.exception.SelfTransferNotAllowedException;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import com.github.igorcossta.domain.service.Deposit;
 
@@ -19,14 +22,14 @@ public class DepositImpl implements Deposit {
     @Override
     public void to(UUID uuid, BigDecimal value) {
         Account account = accountRepository.findByUUID(uuid)
-                .orElseThrow(() -> new RuntimeException("account %s not found".formatted(uuid)));
+                .orElseThrow(() -> new AccountNotFoundException(uuid));
 
         if (account.getIdentifier().equals(uuid)) {
-            throw new RuntimeException("You cannot send money to yourself");
+            throw new SelfTransferNotAllowedException();
         }
 
         if (!account.receivesTransactions()) {
-            throw new RuntimeException("Account %s can't receive transactions".formatted(uuid));
+            throw new ReceivingTransactionsDisabledException(uuid);
         }
 
         account.deposit(new Amount(value));

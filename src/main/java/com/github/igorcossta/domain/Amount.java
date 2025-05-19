@@ -1,5 +1,8 @@
 package com.github.igorcossta.domain;
 
+import com.github.igorcossta.domain.exception.InsufficientFundsException;
+import com.github.igorcossta.domain.exception.InvalidTransactionAmountException;
+
 import java.math.BigDecimal;
 
 public class Amount {
@@ -7,7 +10,7 @@ public class Amount {
 
     public Amount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Amount must be non-null and non-negative");
+            throw new InvalidTransactionAmountException();
         }
         this.amount = amount;
     }
@@ -18,7 +21,7 @@ public class Amount {
 
     public Amount subtract(Amount other) {
         if (this.amount.compareTo(other.amount) < 0) {
-            throw new IllegalArgumentException("Insufficient funds for withdrawal");
+            throw new InsufficientFundsException(amount);
         }
         return new Amount(this.amount.subtract(other.amount));
     }

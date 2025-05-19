@@ -1,6 +1,7 @@
 package com.github.igorcossta.application.service;
 
 import com.github.igorcossta.domain.Account;
+import com.github.igorcossta.domain.exception.AccountNotFoundException;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import com.github.igorcossta.domain.service.Balance;
 
@@ -17,7 +18,7 @@ public class BalanceImpl implements Balance {
     @Override
     public BigDecimal show(UUID uuid) {
         Account account = accountRepository.findByUUID(uuid)
-                .orElseThrow(() -> new RuntimeException("account %s not found".formatted(uuid)));
+                .orElseThrow(() -> new AccountNotFoundException(uuid));
         return account.balance();
     }
 }

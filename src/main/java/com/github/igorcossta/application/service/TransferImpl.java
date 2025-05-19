@@ -2,6 +2,10 @@ package com.github.igorcossta.application.service;
 
 import com.github.igorcossta.domain.Account;
 import com.github.igorcossta.domain.Amount;
+import com.github.igorcossta.domain.exception.ReceivingTransactionsDisabledException;
+import com.github.igorcossta.domain.exception.AccountNotFoundException;
+import com.github.igorcossta.domain.exception.InvalidPlayerException;
+import com.github.igorcossta.domain.exception.SelfTransferNotAllowedException;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import com.github.igorcossta.domain.service.Transfer;
 
@@ -19,17 +23,17 @@ public class TransferImpl implements Transfer {
     @Override
     public void execute(UUID sender, UUID receiver, BigDecimal value) {
         if (receiver == null)
-            throw new RuntimeException("Receiver cannot be null");
+            throw new InvalidPlayerException();
         if (sender.equals(receiver))
-            throw new RuntimeException("You cannot send money to yourself");
+            throw new SelfTransferNotAllowedException();
 
         Account senderAcc = accountRepository.findByUUID(sender)
-                .orElseThrow(() -> new RuntimeException("account %s not found".formatted(sender)));
+                .orElseThrow(() -> new AccountNotFoundException(sender));
         Account receiverAcc = accountRepository.findByUUID(receiver)
-                .orElseThrow(() -> new RuntimeException("account %s not found".formatted(receiver)));
+                .orElseThrow(() -> new AccountNotFoundException(receiver));
 
         if (!receiverAcc.receivesTransactions())
-            throw new RuntimeException("Account %s can't receive transactions".formatted(receiverAcc.getIdentifier()));
+            throw new ReceivingTransactionsDisabledException(receiver);
 
         Amount amount = new Amount(value);
 

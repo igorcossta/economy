@@ -4,6 +4,9 @@ import com.github.igorcossta.domain.Account;
 import com.github.igorcossta.domain.Amount;
 import com.github.igorcossta.domain.Identifier;
 import com.github.igorcossta.domain.Username;
+import com.github.igorcossta.domain.exception.AccountNotFoundException;
+import com.github.igorcossta.domain.exception.ReceivingTransactionsDisabledException;
+import com.github.igorcossta.domain.exception.SelfTransferNotAllowedException;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,8 +16,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class DepositImplTest {
@@ -36,7 +38,7 @@ class DepositImplTest {
         when(accountRepository.findByUUID(uuid))
                 .thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> deposit.to(uuid, amount));
+        var exception = assertThrowsExactly(AccountNotFoundException.class, () -> deposit.to(uuid, amount));
 
         assertEquals("account efb6ab8a-90b4-4ab1-b6d0-76aaf8f79b10 not found", exception.getMessage());
         verify(accountRepository).findByUUID(uuid);
@@ -53,7 +55,7 @@ class DepositImplTest {
         when(accountRepository.findByUUID(uuid))
                 .thenReturn(Optional.of(account));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> deposit.to(uuid, amount));
+        var exception = assertThrowsExactly(SelfTransferNotAllowedException.class, () -> deposit.to(uuid, amount));
 
         assertEquals("You cannot send money to yourself", exception.getMessage());
         assertEquals(uuid, account.getIdentifier());
@@ -77,7 +79,7 @@ class DepositImplTest {
         when(accountRepository.findByUUID(targetUUID))
                 .thenReturn(Optional.of(targetAccount));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> deposit.to(targetUUID, amount));
+        var exception = assertThrowsExactly(ReceivingTransactionsDisabledException.class, () -> deposit.to(targetUUID, amount));
 
         assertEquals("Account 22222222-2222-2222-2222-222222222222 can't receive transactions", exception.getMessage());
         verify(accountRepository).findByUUID(targetUUID);
