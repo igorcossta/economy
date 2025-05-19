@@ -1,5 +1,6 @@
 package com.github.igorcossta.domain;
 
+import com.github.igorcossta.domain.exception.BalanceLimitExceedException;
 import com.github.igorcossta.domain.exception.InsufficientFundsException;
 import com.github.igorcossta.domain.exception.InvalidTransactionAmountException;
 
@@ -7,6 +8,7 @@ import java.math.BigDecimal;
 
 public class Amount {
     private final BigDecimal amount;
+    private final BigDecimal MAX_BALANCE = new BigDecimal(999_999_999);
 
     public Amount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
@@ -16,7 +18,11 @@ public class Amount {
     }
 
     public Amount add(Amount other) {
-        return new Amount(this.amount.add(other.amount));
+        Amount result = new Amount(this.amount.add(other.amount));
+        if (result.amount.compareTo(MAX_BALANCE) > 0) {
+            throw new BalanceLimitExceedException(MAX_BALANCE);
+        }
+        return result;
     }
 
     public Amount subtract(Amount other) {
