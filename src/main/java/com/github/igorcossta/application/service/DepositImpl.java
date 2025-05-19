@@ -4,7 +4,6 @@ import com.github.igorcossta.domain.Account;
 import com.github.igorcossta.domain.Amount;
 import com.github.igorcossta.domain.exception.AccountNotFoundException;
 import com.github.igorcossta.domain.exception.ReceivingTransactionsDisabledException;
-import com.github.igorcossta.domain.exception.SelfTransferNotAllowedException;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import com.github.igorcossta.domain.service.Deposit;
 
@@ -23,10 +22,6 @@ public class DepositImpl implements Deposit {
     public void to(UUID uuid, BigDecimal value) {
         Account account = accountRepository.findByUUID(uuid)
                 .orElseThrow(() -> new AccountNotFoundException(uuid));
-
-        if (account.getIdentifier().equals(uuid)) {
-            throw new SelfTransferNotAllowedException();
-        }
 
         if (!account.receivesTransactions()) {
             throw new ReceivingTransactionsDisabledException(uuid);
