@@ -1,5 +1,7 @@
 package com.github.igorcossta.infra.database;
 
+import com.github.igorcossta.domain.TransactionLog;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -57,8 +59,55 @@ public class Sqlite {
                      show_balance_on_join BOOLEAN NOT NULL DEFAULT 1
                  );
                 """;
+        final String CREATE_TRANSACTION_LOG_TABLE = """
+                CREATE TABLE IF NOT EXISTS Transaction_log (
+                    id CHAR(36) PRIMARY KEY,
+                    action CHAR(50),
+                    sender CHAR(255),
+                    receiver CHAR(255),
+                    amount DECIMAL(19, 4),
+                    previous_receiver_balance DECIMAL(19, 4),
+                    new_receiver_balance DECIMAL(19, 4),
+                    previous_sender_balance DECIMAL(19, 4),
+                    new_sender_balance DECIMAL(19, 4),
+                    timestamp TEXT
+                );
+                """;
         try (Statement stmt = getConnection().createStatement()) {
             stmt.executeUpdate(CREATE_ACCOUNT_TABLE);
+            stmt.executeUpdate(CREATE_TRANSACTION_LOG_TABLE);
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public void save(TransactionLog transaction) {
+        String SAVE_TRANSACTION_LOG = """
+                    INSERT INTO transaction_log (
+                        id,
+                        action,
+                        sender,
+                        receiver,
+                        amount,
+                        previous_receiver_balance,
+                        new_receiver_balance,
+                        previous_sender_balance,
+                        new_sender_balance,
+                        timestamp
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+        try (var stmt = getConnection().prepareStatement(SAVE_TRANSACTION_LOG)) {
+            stmt.setString(1, UUID.randomUUID().toString());
+            stmt.setString(2, transaction.action());
+            stmt.setString(3, transaction.sender());
+            stmt.setString(4, transaction.receiver());
+            stmt.setBigDecimal(5, transaction.amount());
+            stmt.setBigDecimal(6, transaction.previousReceiverBalance());
+            stmt.setBigDecimal(7, transaction.newReceiverBalance());
+            stmt.setBigDecimal(8, transaction.previousSenderBalance());
+            stmt.setBigDecimal(9, transaction.newSenderBalance());
+            stmt.setString(10, transaction.timestamp().toString());
+            stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e.getMessage());
         }

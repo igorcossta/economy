@@ -1,6 +1,7 @@
 package com.github.igorcossta.command;
 
 import com.github.igorcossta.command.template.Command;
+import com.github.igorcossta.domain.TransactionLog;
 import com.github.igorcossta.domain.service.Transfer;
 import com.github.igorcossta.infra.event.TransferSucceededEvent;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -46,12 +47,10 @@ public class TransferCommand extends Command {
                                     Player commandExecutor = (Player) context.getSource().getSender();
                                     try {
                                         OfflinePlayer receiver = Bukkit.getOfflinePlayer(username);
-                                        transfer.execute(commandExecutor.getUniqueId(),
+                                        TransactionLog transactionLog = transfer.execute(commandExecutor.getUniqueId(),
                                                 receiver.getUniqueId(),
                                                 new BigDecimal(amount));
-                                        new TransferSucceededEvent(commandExecutor,
-                                                (Player) receiver,
-                                                new BigDecimal(amount)).callEvent();
+                                        new TransferSucceededEvent(transactionLog).callEvent();
                                     } catch (Exception e) {
                                         commandExecutor.sendMessage(e.getMessage());
                                     }
