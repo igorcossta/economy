@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,7 +58,7 @@ class TransferTest {
         transfer.execute(sender, receiver, transferAmount.value());
 
         assertEquals(ZERO, senderAcc.balance());
-        assertEquals(TEN, receiverAcc.balance());
+        assertEquals(new BigDecimal("10.00"), receiverAcc.balance());
 
         verify(accountRepository, times(2)).save(any(Account.class));
     }
