@@ -2,6 +2,7 @@ package com.github.igorcossta.command;
 
 import com.github.igorcossta.command.template.Command;
 import com.github.igorcossta.domain.service.Transfer;
+import com.github.igorcossta.infra.event.TransferSucceededEvent;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -11,8 +12,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 import static io.papermc.paper.command.brigadier.Commands.argument;
 
@@ -50,7 +49,9 @@ public class TransferCommand extends Command {
                                         transfer.execute(commandExecutor.getUniqueId(),
                                                 receiver.getUniqueId(),
                                                 new BigDecimal(amount));
-                                        commandExecutor.sendMessage("sending to %s amount %s".formatted(username, NumberFormat.getCurrencyInstance(Locale.US).format(amount)));
+                                        new TransferSucceededEvent(commandExecutor,
+                                                (Player) receiver,
+                                                new BigDecimal(amount)).callEvent();
                                     } catch (Exception e) {
                                         commandExecutor.sendMessage(e.getMessage());
                                     }
