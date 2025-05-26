@@ -5,6 +5,7 @@ import com.github.igorcossta.domain.Amount;
 import com.github.igorcossta.domain.Identifier;
 import com.github.igorcossta.domain.Username;
 import com.github.igorcossta.domain.exception.AccountNotFoundException;
+import com.github.igorcossta.domain.exception.InvalidPlayerException;
 import com.github.igorcossta.domain.exception.ReceivingTransactionsDisabledException;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +22,10 @@ import static org.mockito.Mockito.*;
 
 class DepositTest {
     UUID receiver;
+    UUID sender;
 
     Account receiverAcc;
+    Account senderAcc;
 
     AccountRepository accountRepository;
     DepositImpl deposit;
@@ -32,8 +35,10 @@ class DepositTest {
     @BeforeEach
     void beforeEach() {
         receiver = UUID.fromString("11111111-1111-1111-1111-111111111111");
+        sender = UUID.fromString("22222222-2222-2222-2222-222222222222");
 
         receiverAcc = new Account(new Identifier(receiver), new Amount(TEN), new Username("receiverUnderTest"));
+        senderAcc = new Account(new Identifier(sender), new Amount(TEN), new Username("senderUnderTest"));
 
         accountRepository = mock(AccountRepository.class);
         deposit = new DepositImpl(accountRepository);
@@ -46,11 +51,13 @@ class DepositTest {
     void whenPlayerNotFoundThenThrowException() {
         when(accountRepository.findByUUID(receiver))
                 .thenReturn(Optional.empty());
+        when(accountRepository.findByUUID(sender))
+                .thenReturn(Optional.of(senderAcc));
 
-        var exception = assertThrowsExactly(AccountNotFoundException.class, () -> deposit.to(receiver, depositAmount.value()));
+        var exception = assertThrowsExactly(AccountNotFoundException.class, () -> deposit.to(sender, receiver, depositAmount.value()));
 
         assertEquals("account 11111111-1111-1111-1111-111111111111 not found", exception.getMessage());
-        verify(accountRepository).findByUUID(receiver);
+        verify(accountRepository, times(2)).findByUUID(any(UUID.class));
         verifyNoMoreInteractions(accountRepository);
     }
 
@@ -66,10 +73,13 @@ class DepositTest {
         when(accountRepository.findByUUID(receiver))
                 .thenReturn(Optional.of(receiverAcc));
 
-        var exception = assertThrowsExactly(ReceivingTransactionsDisabledException.class, () -> deposit.to(receiver, depositAmount.value()));
+        when(accountRepository.findByUUID(sender))
+                .thenReturn(Optional.of(senderAcc));
+
+        var exception = assertThrowsExactly(ReceivingTransactionsDisabledException.class, () -> deposit.to(sender, receiver, depositAmount.value()));
 
         assertEquals("Account 11111111-1111-1111-1111-111111111111 can't receive transactions", exception.getMessage());
-        verify(accountRepository).findByUUID(receiver);
+        verify(accountRepository, times(2)).findByUUID(any(UUID.class));
         verify(receiverAcc, never()).deposit(any());
         verifyNoMoreInteractions(accountRepository);
     }
@@ -79,12 +89,26 @@ class DepositTest {
     void whenDepositMoneyToPlayerThenBalancesAreUpdatedCorrectly() {
         when(accountRepository.findByUUID(receiver))
                 .thenReturn(Optional.of(receiverAcc));
+        when(accountRepository.findByUUID(sender))
+                .thenReturn(Optional.of(senderAcc));
 
-        deposit.to(receiver, depositAmount.value());
+        deposit.to(sender, receiver, depositAmount.value());
 
-        verify(accountRepository).findByUUID(receiver);
+        verify(accountRepository, times(2)).findByUUID(any(UUID.class));
         verify(accountRepository, times(1)).save(any(Account.class));
         verifyNoMoreInteractions(accountRepository);
+    }
+
+    @Test
+    @DisplayName("When receiver not exists, then exception is thrown")
+    void whenReceiverNotExistsThenExceptionIsThrown() {
+        InvalidPlayerException exception = assertThrowsExactly(InvalidPlayerException.class,
+                () -> deposit.to(sender, null, depositAmount.value()));
+
+        assertEquals("Player cannot be null", exception.getMessage());
+
+        verify(accountRepository, times(0)).findByUUID(any(UUID.class));
+        verify(accountRepository, times(0)).save(any(Account.class));
     }
 
 }

@@ -4,6 +4,7 @@ import com.github.igorcossta.command.RegisterCommands;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import com.github.igorcossta.domain.repository.TransactionLogRepository;
 import com.github.igorcossta.infra.database.Sqlite;
+import com.github.igorcossta.infra.listener.DepositSucceeded;
 import com.github.igorcossta.infra.listener.OnJoin;
 import com.github.igorcossta.infra.listener.TransferSucceeded;
 import com.github.igorcossta.infra.repository.AccountRepositorySqlite;
@@ -25,6 +26,7 @@ public final class Economy extends JavaPlugin {
         instance = this;
         this.getServer().getPluginManager().registerEvents(new OnJoin(accountRepository), this);
         this.getServer().getPluginManager().registerEvents(new TransferSucceeded(transactionRepository), this);
+        this.getServer().getPluginManager().registerEvents(new DepositSucceeded(transactionRepository), this);
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
                 commands ->
                         new RegisterCommands(accountRepository, commands.registrar())

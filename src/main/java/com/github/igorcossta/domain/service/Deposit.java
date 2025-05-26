@@ -1,8 +1,10 @@
 package com.github.igorcossta.domain.service;
 
+import com.github.igorcossta.domain.TransactionLog;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface Deposit {
-    void to(UUID uuid, BigDecimal value);
+    TransactionLog to(UUID sender, UUID receiver, BigDecimal value);
 }

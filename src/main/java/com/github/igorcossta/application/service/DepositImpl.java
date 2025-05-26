@@ -2,12 +2,15 @@ package com.github.igorcossta.application.service;
 
 import com.github.igorcossta.domain.Account;
 import com.github.igorcossta.domain.Amount;
+import com.github.igorcossta.domain.TransactionLog;
 import com.github.igorcossta.domain.exception.AccountNotFoundException;
+import com.github.igorcossta.domain.exception.InvalidPlayerException;
 import com.github.igorcossta.domain.exception.ReceivingTransactionsDisabledException;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import com.github.igorcossta.domain.service.Deposit;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 public class DepositImpl implements Deposit {
@@ -17,17 +20,37 @@ public class DepositImpl implements Deposit {
         this.accountRepository = accountRepository;
     }
 
-    // todo: get offline player uuid instead and then make the check at service level
     @Override
-    public void to(UUID uuid, BigDecimal value) {
-        Account account = accountRepository.findByUUID(uuid)
-                .orElseThrow(() -> new AccountNotFoundException(uuid));
+    public TransactionLog to(UUID sender, UUID receiver, BigDecimal value) {
+        if (receiver == null)
+            throw new InvalidPlayerException();
 
-        if (!account.receivesTransactions()) {
-            throw new ReceivingTransactionsDisabledException(uuid);
+        Account senderAcc = accountRepository.findByUUID(sender)
+                .orElseThrow(() -> new AccountNotFoundException(sender));
+        Account receiverAcc = accountRepository.findByUUID(receiver)
+                .orElseThrow(() -> new AccountNotFoundException(receiver));
+
+        if (!receiverAcc.receivesTransactions()) {
+            throw new ReceivingTransactionsDisabledException(receiver);
         }
 
-        account.deposit(new Amount(value));
-        accountRepository.save(account);
+        Amount amount = new Amount(value);
+        BigDecimal previousReceiverBalance = receiverAcc.balance();
+        receiverAcc.deposit(amount);
+        BigDecimal newReceiverBalance = receiverAcc.balance();
+
+        var transfer = new TransactionLog(UUID.randomUUID(), "DEPOSIT",
+                senderAcc.getOwnerUsername(),
+                receiverAcc.getOwnerUsername(),
+                amount.value(),
+                previousReceiverBalance,
+                newReceiverBalance,
+                null,
+                null,
+                Instant.now()
+        );
+
+        accountRepository.save(receiverAcc);
+        return transfer;
     }
 }

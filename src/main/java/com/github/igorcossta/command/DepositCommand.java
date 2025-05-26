@@ -1,18 +1,18 @@
 package com.github.igorcossta.command;
 
 import com.github.igorcossta.command.template.Command;
+import com.github.igorcossta.domain.TransactionLog;
 import com.github.igorcossta.domain.service.Deposit;
+import com.github.igorcossta.infra.event.DepositSucceededEvent;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.util.Locale;
-import java.util.Objects;
 
 import static io.papermc.paper.command.brigadier.Commands.argument;
 
@@ -46,13 +46,12 @@ class DepositCommand extends Command {
                                     double amount = DoubleArgumentType.getDouble(context, "amount");
 
                                     Player commandExecutor = (Player) context.getSource().getSender();
-
                                     try {
-                                        Player target = Bukkit.getPlayerExact(username);
-                                        Objects.requireNonNull(target, "player must be online");
-
-                                        deposit.to(target.getUniqueId(), new BigDecimal(amount));
-                                        commandExecutor.sendMessage("sending to %s amount %s".formatted(username, NumberFormat.getCurrencyInstance(Locale.US).format(amount)));
+                                        OfflinePlayer receiver = Bukkit.getOfflinePlayer(username);
+                                        TransactionLog transactionLog = deposit.to(commandExecutor.getUniqueId(),
+                                                receiver.getUniqueId(),
+                                                new BigDecimal(amount));
+                                        new DepositSucceededEvent(transactionLog).callEvent();
                                     } catch (Exception e) {
                                         commandExecutor.sendMessage(e.getMessage());
                                     }
