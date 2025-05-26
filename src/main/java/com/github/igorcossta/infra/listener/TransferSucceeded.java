@@ -3,13 +3,11 @@ package com.github.igorcossta.infra.listener;
 import com.github.igorcossta.domain.TransactionLog;
 import com.github.igorcossta.domain.repository.TransactionLogRepository;
 import com.github.igorcossta.infra.event.TransferSucceededEvent;
+import com.github.igorcossta.utils.Format;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-
-import java.text.NumberFormat;
-import java.util.Locale;
 
 public class TransferSucceeded implements Listener {
     private final TransactionLogRepository repository;
@@ -27,15 +25,11 @@ public class TransferSucceeded implements Listener {
         repository.save(event.getTransactionLog());
 
         if (sender != null) {
-            sender.sendMessage("You sent " +
-                    NumberFormat.getCurrencyInstance(Locale.US).format(transactionLog.amount()) + " to " +
-                    transactionLog.receiver());
+            sender.sendMessage("You sent " + Format.money(transactionLog.amount()) + " to " + transactionLog.receiver());
         }
 
         if (receiver != null) {
-            receiver.sendMessage("You received " +
-                    NumberFormat.getCurrencyInstance(Locale.US).format(transactionLog.amount()) + " from " +
-                    transactionLog.sender());
+            receiver.sendMessage("You received " + Format.money(transactionLog.amount()) + " from " + transactionLog.sender());
         }
     }
 }

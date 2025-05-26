@@ -2,6 +2,7 @@ package com.github.igorcossta.command;
 
 import com.github.igorcossta.command.template.Command;
 import com.github.igorcossta.domain.service.Balance;
+import com.github.igorcossta.utils.Format;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.entity.Player;
@@ -24,7 +25,7 @@ class BalanceCommand extends Command {
                 .requires(commandSourceStack -> commandSourceStack.getExecutor() instanceof Player)
                 .executes(commandContext -> {
                     Player player = (Player) commandContext.getSource().getSender();
-                    player.sendMessage("You balance is $%s".formatted(balance.show(player.getUniqueId())));
+                    player.sendMessage("Your balance is %s".formatted(Format.money(balance.show(player.getUniqueId()))));
                     return 1;
                 });
     }

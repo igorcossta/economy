@@ -5,13 +5,12 @@ import com.github.igorcossta.domain.Amount;
 import com.github.igorcossta.domain.Identifier;
 import com.github.igorcossta.domain.Username;
 import com.github.igorcossta.domain.repository.AccountRepository;
+import com.github.igorcossta.utils.Format;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,7 +33,7 @@ public class OnJoin implements Listener {
             event.getPlayer().sendMessage("Welcome! We are creating a new bank account.");
         } else if (account.get().showsBalanceOnJoin()) {
             event.getPlayer().sendMessage("Welcome back! Your current balance is: " +
-                    NumberFormat.getCurrencyInstance(Locale.US).format(account.get().balance()));
+                    Format.money(account.get().balance()));
         }
     }
 }
