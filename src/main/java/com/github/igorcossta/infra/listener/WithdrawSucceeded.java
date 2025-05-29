@@ -29,7 +29,7 @@ public class WithdrawSucceeded implements Listener {
         }
 
         if (target != null) {
-            target.sendMessage(transactionLog.amount() + " was withdrawn from your account by " + transactionLog.sender() + ".");
+            target.sendMessage(Format.money(transactionLog.amount()) + " was withdrawn from your account by " + transactionLog.sender() + ".");
         }
     }
 }
