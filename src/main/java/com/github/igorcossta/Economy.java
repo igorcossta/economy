@@ -7,6 +7,7 @@ import com.github.igorcossta.infra.database.Sqlite;
 import com.github.igorcossta.infra.listener.DepositSucceeded;
 import com.github.igorcossta.infra.listener.OnJoin;
 import com.github.igorcossta.infra.listener.TransferSucceeded;
+import com.github.igorcossta.infra.listener.WithdrawSucceeded;
 import com.github.igorcossta.infra.repository.AccountRepositorySqlite;
 import com.github.igorcossta.infra.repository.TransactionRepositorySqlite;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -27,6 +28,7 @@ public final class Economy extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new OnJoin(accountRepository), this);
         this.getServer().getPluginManager().registerEvents(new TransferSucceeded(transactionRepository), this);
         this.getServer().getPluginManager().registerEvents(new DepositSucceeded(transactionRepository), this);
+        this.getServer().getPluginManager().registerEvents(new WithdrawSucceeded(transactionRepository), this);
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
                 commands ->
                         new RegisterCommands(accountRepository, commands.registrar())
