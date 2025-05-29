@@ -13,6 +13,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
+import static java.math.BigInteger.ZERO;
+
 public class WithDrawImpl implements Withdraw {
     private final AccountRepository accountRepository;
 
@@ -41,8 +43,8 @@ public class WithDrawImpl implements Withdraw {
                 amount.value(),
                 previousReceiverBalance,
                 newReceiverBalance,
-                null,
-                null,
+                new BigDecimal(ZERO),
+                new BigDecimal(ZERO),
                 Instant.now()
         );
 

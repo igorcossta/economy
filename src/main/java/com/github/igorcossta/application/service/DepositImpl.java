@@ -11,8 +11,11 @@ import com.github.igorcossta.domain.repository.AccountRepository;
 import com.github.igorcossta.domain.service.Deposit;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.Instant;
 import java.util.UUID;
+
+import static java.math.BigInteger.*;
 
 public class DepositImpl implements Deposit {
     private final AccountRepository accountRepository;
@@ -46,8 +49,8 @@ public class DepositImpl implements Deposit {
                 amount.value(),
                 previousReceiverBalance,
                 newReceiverBalance,
-                null,
-                null,
+                new BigDecimal(ZERO),
+                new BigDecimal(ZERO),
                 Instant.now()
         );
 
