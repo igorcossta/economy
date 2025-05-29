@@ -3,9 +3,9 @@ package com.github.igorcossta.application.service;
 import com.github.igorcossta.domain.Account;
 import com.github.igorcossta.domain.Amount;
 import com.github.igorcossta.domain.TransactionLog;
+import com.github.igorcossta.domain.TransactionType;
 import com.github.igorcossta.domain.exception.AccountNotFoundException;
 import com.github.igorcossta.domain.exception.InvalidPlayerException;
-import com.github.igorcossta.domain.exception.SelfTransferNotAllowedException;
 import com.github.igorcossta.domain.repository.AccountRepository;
 import com.github.igorcossta.domain.service.Withdraw;
 
@@ -35,7 +35,7 @@ public class WithDrawImpl implements Withdraw {
         targetAcc.withdraw(amount);
         BigDecimal newReceiverBalance = targetAcc.balance();
 
-        var transactionLog = new TransactionLog(UUID.randomUUID(), "WITHDRAW",
+        var transactionLog = new TransactionLog(UUID.randomUUID(), TransactionType.WITHDRAW,
                 executorAcc.getOwnerUsername(),
                 targetAcc.getOwnerUsername(),
                 amount.value(),

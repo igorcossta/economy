@@ -98,7 +98,7 @@ public class Sqlite {
                 """;
         try (var stmt = getConnection().prepareStatement(SAVE_TRANSACTION_LOG)) {
             stmt.setString(1, UUID.randomUUID().toString());
-            stmt.setString(2, transaction.action());
+            stmt.setString(2, transaction.transactionType().toString());
             stmt.setString(3, transaction.sender());
             stmt.setString(4, transaction.receiver());
             stmt.setBigDecimal(5, transaction.amount());

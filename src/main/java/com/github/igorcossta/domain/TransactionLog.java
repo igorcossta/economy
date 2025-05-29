@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record TransactionLog(
         UUID id,
-        String action,
+        TransactionType transactionType,
         String sender,
         String receiver,
         BigDecimal amount,

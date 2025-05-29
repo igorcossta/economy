@@ -3,6 +3,7 @@ package com.github.igorcossta.application.service;
 import com.github.igorcossta.domain.Account;
 import com.github.igorcossta.domain.Amount;
 import com.github.igorcossta.domain.TransactionLog;
+import com.github.igorcossta.domain.TransactionType;
 import com.github.igorcossta.domain.exception.AccountNotFoundException;
 import com.github.igorcossta.domain.exception.InvalidPlayerException;
 import com.github.igorcossta.domain.exception.ReceivingTransactionsDisabledException;
@@ -39,7 +40,7 @@ public class DepositImpl implements Deposit {
         receiverAcc.deposit(amount);
         BigDecimal newReceiverBalance = receiverAcc.balance();
 
-        var transfer = new TransactionLog(UUID.randomUUID(), "DEPOSIT",
+        var transfer = new TransactionLog(UUID.randomUUID(), TransactionType.DEPOSIT,
                 senderAcc.getOwnerUsername(),
                 receiverAcc.getOwnerUsername(),
                 amount.value(),
